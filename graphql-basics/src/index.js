@@ -1,4 +1,6 @@
 import { GraphQLServer } from 'graphql-yoga'
+const chalk = require('chalk')
+
 
 const typeDefs = `
     type Query {
@@ -13,3 +15,12 @@ const resolvers = {
         }
     }
 }
+
+const server = new GraphQLServer ({
+    typeDefs,
+    resolvers
+})
+
+server.start(() => {
+    console.log(chalk.blue.inverse('The server is up'))
+})
