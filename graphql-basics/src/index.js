@@ -3,16 +3,33 @@ const chalk = require('chalk')
 
 
 const typeDefs = `
-    type Query {
-    hello: String!
-    }
+type Query {
+    price: Float!
+    title: String!
+    RealeaseYear: Int!
+    inStock: Boolean!
+    Rating: Float
+}
 `
 
 const resolvers = {
     Query: {
-        hello() {
-            return 'This is my first query'
-        }
+      price() {
+        return 49.99
+      },
+      title() {
+        return 'Video Game'
+      },
+      RealeaseYear() {
+        return 2023
+      },
+      inStock() {
+        return false
+      },
+      Rating () {
+       return 5.0
+            
+      }
     }
 }
 

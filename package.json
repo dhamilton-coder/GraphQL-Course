@@ -1,5 +1,6 @@
 {
   "dependencies": {
+    "chalk": "^4.1.2",
     "graphql-yoga": "^1.14.10"
   }
 }
