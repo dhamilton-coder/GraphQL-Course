@@ -4,8 +4,9 @@ const chalk = require('chalk')
 
 const typeDefs = `
 type Query {
-  greeting(name: String) : String,
-  add(a: Float, b: Float) : Float 
+  greeting(name: String) : String
+  grades(amount_correct : [Float]! , total : [Float]!) : Float
+  add(a: [Float]!) : Float 
   me : User!
   post : Post!
 }
@@ -57,18 +58,28 @@ const resolvers = {
     },
 
     add(parent, args) {
-      console.log(args)
-      if (args.a && args.b) {
-      return args.a + args.b
-      } 
-      
-      else if (!args.a || !args.b) {
-        return null
+      if (args.a.length  === 0) {
+        return 0
       }
 
-    else {
-      return 50079
-    }
+      else {
+       const sum = args.a.reduce((partialSum, a) => partialSum + a, 0); 
+       return sum
+      }
+    },
+
+    grades(parent, args, context, info) {
+
+      if (args.total.length === 0 || args.amount_correct.length === 0) {
+        return 0
+      }
+      else {
+        const sum = args.amount_correct.reduce((partialSum, a) => partialSum + a, 0); 
+        const sum2 = args.total.reduce((partialSum,a) => partialSum + a, 0)
+
+        return sum / sum2 * 100
+      }
+      return [10, 20, args.amount_correct / args.total * 100]
     }
             
       }
