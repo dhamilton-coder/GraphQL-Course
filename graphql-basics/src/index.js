@@ -6,19 +6,19 @@ import { v4 as uuidv4 } from 'uuid';
 
 
 const exampleComments = [{
-  ID: 12910812321,
+  ID: '12910812321',
   text: 'Comment One',
   author : '2131223111',
-  post : 1291081
+  post : '1291081'
   
 },
 
 {
 
-  ID : 327480928231231,
+  ID : '327480928231231',
   text : 'Comment Two',
   author : '8219038120',
-  post : 1291081
+  post : '1291081'
 },
 
 {
@@ -26,14 +26,14 @@ const exampleComments = [{
   ID : 32748092843213123,
   text: 'Comment Three',
   author : '2131223111',
-  post : 1291081
+  post : '1291081'
 
 }]
 
 
 
 const examplePosts = [{
-  ID: 1291081,
+  ID: '1291081',
   title: 'The Myth of Freedom',
   body: 'This is not what I had hoped for when writing this blog. Endless critisism from individuals who think they have it all under their control. Their life in their hands, I wish, alas it is unfortuantly the way things are and what can someone like me do about that. Sorry guys!',
   published : true,
@@ -43,7 +43,7 @@ const examplePosts = [{
 
 {
 
-  ID : 327480928,
+  ID : '327480928',
   title: 'The Wonders of the Sea',
   body: `Sorry, i'm to lazy to write another blog. `,
   published : false,
@@ -52,7 +52,7 @@ const examplePosts = [{
 
 {
 
-  ID : 32748092843,
+  ID : '32748092843',
   title: 'How did we get here? ( Evolution : A basic guide )',
   body: `Sorry, i'm to lazy to write another blog. `,
   published : false,
@@ -109,6 +109,7 @@ type Post {
   body :  String!
   published : Boolean!
   author : User!,
+  comments : [Comment!]
 }
 
 
@@ -121,6 +122,7 @@ type Comment {
 
 type Mutation {
   createUser(Nachname:String!, Vorname:String!, age:Int ): User!
+  createPost(title: String!, body: String, published: Boolean!, author : ID!) : Post!
 }
 `
 
@@ -222,6 +224,34 @@ const resolvers = {
           exampleData.push(user)
           return  user
         }
+
+
+    },
+
+
+    createPost(parent, args) {
+      const UserExists = exampleData.some((user) => {
+        return user.ID === args.author
+      }
+        )
+
+      if (UserExists) {
+        const post = {
+          ID : uuidv4(),
+          title : args.title, 
+          body : args.body,
+          published: args.published,
+          author : args.author
+
+        }
+
+        examplePosts.push(post)
+        return(post)
+
+      } else {
+        throw new Error('No User Found!')
+      }
+
    
       
       
@@ -237,6 +267,12 @@ const resolvers = {
     author(parent, args) {
       return exampleData.find((user) => {
         return user.ID === parent.author
+      })
+    },
+
+    comments(parent, args) {
+      return exampleComments.filter((comment) => {
+        return comment.post === parent.ID
       })
     }
   },
