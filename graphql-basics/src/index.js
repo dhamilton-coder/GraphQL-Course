@@ -1,5 +1,8 @@
 import { GraphQLServer } from 'graphql-yoga'
 const chalk = require('chalk')
+import { v4 as uuidv4 } from 'uuid';
+
+
 
 
 const exampleComments = [{
@@ -61,22 +64,22 @@ const exampleData = [{
 
   ID : '21312312',
   Nachname : 'Bond',
-  Vorname : 'Billy',
+  Vorname : 'billybond@company.com',
   age : 49
 
 },
 
 {
   ID : '2131223111',
-Nachname : 'David',
-Vorname : 'Hangerson',
+Nachname : 'Daniels',
+Vorname : 'daviddaniels@company.com',
 age : 67
 },
 
 {
   ID : '8219038120',
-  Nachname : 'Hello',
-  Vorname : 'Jello',
+  Nachname : 'Hangerson',
+  Vorname : 'henryhangerson@company.com',
   age : 109
 }]
 
@@ -114,6 +117,10 @@ type Comment {
   text: String!
   author : User!
   post : Post!
+}
+
+type Mutation {
+  createUser(Nachname:String!, Vorname:String!, age:Int ): User!
 }
 `
 
@@ -186,9 +193,46 @@ const resolvers = {
 
     getComments (parent, args) {
       return exampleComments
-    }
+    },
+
+  
 
   },
+
+  Mutation: {
+    createUser(parent, args) {
+
+      const VornameTaken = exampleData.some((user) => {
+        return user.Vorname === args.Vorname
+      })
+        if (VornameTaken) {
+          return new Error('Sorry! Email Taken. Oh well :)')
+  
+        }
+
+        else {
+          
+          const user = {
+            ID : uuidv4(),
+            Nachname: args.Nachname,
+            age: args.age,
+            Vorname: args.Vorname
+          }
+  
+          exampleData.push(user)
+          return  user
+        }
+   
+      
+      
+ 
+
+       
+        
+      
+    }
+  },
+  
   Post: {
     author(parent, args) {
       return exampleData.find((user) => {
