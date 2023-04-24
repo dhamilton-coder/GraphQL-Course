@@ -23,7 +23,7 @@ const exampleComments = [{
 
 {
 
-  ID : 32748092843213123,
+  ID : '32748092843213123',
   text: 'Comment Three',
   author : '2131223111',
   post : '1291081'
@@ -123,6 +123,7 @@ type Comment {
 type Mutation {
   createUser(Nachname:String!, Vorname:String!, age:Int ): User!
   createPost(title: String!, body: String, published: Boolean!, author : ID!) : Post!
+  createComment(text: String!, author: ID!, post: ID) : Comment!
 }
 `
 
@@ -251,15 +252,31 @@ const resolvers = {
       } else {
         throw new Error('No User Found!')
       }
+    },
 
-   
-      
-      
- 
+    createComment(parent, args) {
 
-       
-        
+      const PostExists = examplePosts.some((post) => post.ID === args.post && post.published)
+      const UserExists = exampleData.some((user) => user.ID === args.author)
       
+      if (PostExists && UserExists) {
+        const comment = {
+          ID: uuidv4(),
+          text : args.text,
+          author : args.author,
+          post : args.post
+        }
+
+        exampleComments.push(comment)
+
+        return comment
+      }
+     
+      else {
+        throw new Error(`Sorry, Post/User doesn't exist.`)
+      }
+
+     
     }
   },
   
