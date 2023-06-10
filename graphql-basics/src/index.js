@@ -5,7 +5,7 @@ import { v4 as uuidv4 } from 'uuid';
 
 
 
-const exampleComments = [{
+let exampleComments = [{
   ID: '12910812321',
   text: 'Comment One',
   author : '2131223111',
@@ -32,7 +32,7 @@ const exampleComments = [{
 
 
 
-const examplePosts = [{
+let examplePosts = [{
   ID: '1291081',
   title: 'The Myth of Freedom',
   body: 'This is not what I had hoped for when writing this blog. Endless critisism from individuals who think they have it all under their control. Their life in their hands, I wish, alas it is unfortuantly the way things are and what can someone like me do about that. Sorry guys!',
@@ -83,10 +83,11 @@ age : 67
   age : 109
 }]
 
-const typeDefs = `
+let typeDefs = `
 type Query {
   users(query : String) : [User!]!
   getPosts(body : String, title : String, ID : Int, published : Boolean): [Post!]!
+  getAllPosts : [Post!]!
   me : User!
   post : Post!
   getComments : [Comment!]
@@ -120,11 +121,36 @@ type Comment {
   post : Post!
 }
 
+input UserInput {
+    Nachname:String!
+    Vorname:String!
+    age:Int
+   } 
+
+input PostInput {
+  title: String!
+   body: String
+   published: Boolean!
+   author : ID!
+   } 
+
+   input CommentInput {
+    text: String!
+    author: ID!
+    post: ID
+     } 
+
+
 type Mutation {
-  createUser(Nachname:String!, Vorname:String!, age:Int ): User!
-  createPost(title: String!, body: String, published: Boolean!, author : ID!) : Post!
-  createComment(text: String!, author: ID!, post: ID) : Comment!
+  createUser(data : UserInput ): User!
+  deleteUser(id: ID!) : User!
+  createPost(data : PostInput) : Post!
+  deletePost(id: ID! author: ID!) : Post!
+  createComment(data : CommentInput) : Comment!
+  deleteComment(id : ID! author : ID!) : Comment!
 }
+
+
 `
 
 const resolvers = {
@@ -194,6 +220,10 @@ const resolvers = {
     
     },
 
+    getAllPosts() {
+      return examplePosts
+    },
+
     getComments (parent, args) {
       return exampleComments
     },
@@ -206,7 +236,7 @@ const resolvers = {
     createUser(parent, args) {
 
       const VornameTaken = exampleData.some((user) => {
-        return user.Vorname === args.Vorname
+        return user.Vorname === args.data.Vorname
       })
         if (VornameTaken) {
           return new Error('Sorry! Email Taken. Oh well :)')
@@ -217,9 +247,7 @@ const resolvers = {
           
           const user = {
             ID : uuidv4(),
-            Nachname: args.Nachname,
-            age: args.age,
-            Vorname: args.Vorname
+            ...args.data
           }
   
           exampleData.push(user)
@@ -230,20 +258,58 @@ const resolvers = {
     },
 
 
+    deleteUser(parent, args) {
+
+      const userIndex = exampleData.findIndex((user) => user.ID === args.id )
+
+      if (userIndex === -1) {
+        throw new Error('User not found!')
+      }
+
+      examplePosts = examplePosts.filter((post) => {
+        const match = post.author === args.id 
+
+        if(match) {
+          exampleComments = exampleComments.filter((comment) =>   comment.post !== post.ID)
+        }
+        
+        return !match
+      })
+
+      exampleComments = exampleComments.filter((comment) => comment.author !== args.id)
+
+      return exampleData.splice(userIndex, 1)[0]
+    },
+
+    deletePost(parent, args) {
+      const PostExists = examplePosts.find((post) => post.ID === args.id)
+      if (!PostExists) {
+        throw new Error('No Post Found!')
+      }
+
+      else if (PostExists.author !== args.author) {
+        throw new Error('Unauthorised. Please ask for permission before deleting this post!')
+      }
+
+      const PostIndex = examplePosts.indexOf(PostExists)
+      exampleComments = exampleComments.filter((comment) => {
+        return comment.post !== args.id
+      })
+      return examplePosts.splice(PostIndex, 1)[0]
+      
+    },
+
+
     createPost(parent, args) {
       const UserExists = exampleData.some((user) => {
-        return user.ID === args.author
+        return user.ID === args.data.author
       }
         )
 
       if (UserExists) {
         const post = {
           ID : uuidv4(),
-          title : args.title, 
-          body : args.body,
-          published: args.published,
-          author : args.author
-
+          ...args.data
         }
 
         examplePosts.push(post)
@@ -256,15 +322,13 @@ const resolvers = {
 
     createComment(parent, args) {
 
-      const PostExists = examplePosts.some((post) => post.ID === args.post && post.published)
-      const UserExists = exampleData.some((user) => user.ID === args.author)
+      const PostExists = examplePosts.some((post) => post.ID === args.data.post && post.published)
+      const UserExists = exampleData.some((user) => user.ID === args.data.author)
       
       if (PostExists && UserExists) {
         const comment = {
           ID: uuidv4(),
-          text : args.text,
-          author : args.author,
-          post : args.post
+          ...args.data
         }
 
         exampleComments.push(comment)
@@ -277,8 +341,22 @@ const resolvers = {
       }
 
      
+    },
+
+    deleteComment(parent, args) {
+      const CommentExists = exampleComments.find((comment) => comment.ID === args.id)
+      if (!CommentExists) {
+        throw new Error('No Comment Found!')
+      }
+      else if (CommentExists.author !== args.author) {
+        throw new Error('Unauthorised. Please ask for permission before deleting this post!')
+      }
+
+      const commentIndex = exampleComments.indexOf(CommentExists)
+      return exampleComments.splice(commentIndex, 1)[0]
     }
   },
+  
   
   Post: {
     author(parent, args) {
