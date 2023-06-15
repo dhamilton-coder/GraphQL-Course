@@ -53,6 +53,33 @@ const Mutation = {
       return cxt.db.exampleData.splice(userIndex, 1)[0]
     },
 
+    updateUser(parent, args, cxt) {
+      const user = cxt.db.exampleData.find((user) => user.ID === args.id)
+
+      if (!user) {
+        throw new Error('No User Found')
+      }
+
+      if (typeof args.data.vorname === 'string') {
+        const emailTaken = cxt.db.exampleData.some((user) => user.Vorname === args.data.vorname)
+
+        if (emailTaken) {
+          throw new Error('Email in use ; Sorry :/')
+        }
+
+        user.Vorname = args.data.vorname 
+      }
+
+      if (typeof args.data.nachname === 'string') {
+        user.Nachname = args.data.nachname
+      }
+
+      if (typeof args.data.age !== 'undefined') {
+        user.age = args.data.age
+      }
+      return(user)
+    },
+
     deletePost(parent, args, cxt) {
       const PostExists = cxt.db.examplePosts.find((post) => post.ID === args.id)
       if (!PostExists) {

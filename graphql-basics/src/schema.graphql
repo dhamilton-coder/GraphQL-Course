@@ -41,12 +41,21 @@ type Comment {
     post: ID!
      } 
 
+input UpdateUserInput {
+  vorname: String
+  nachname: String
+  age: Int
+}
+
 
 type Mutation {
   createUser(Nachname : String!, Vorname : String!, age : Int ): User!
   deleteUser(id: ID!) : User!
+  updateUser(id: ID data: UpdateUserInput!) : User!
   createPost(title : String!, body: String!, published: Boolean!, author: ID!) : Post!
   deletePost(id: ID! author: ID!) : Post!
+  updatePost(id: ID!) : Post!
   createComment(text : String!, author : ID!, post : ID!) : Comment!
   deleteComment(id : ID! author : ID!) : Comment!
+  updateComment(id: ID!) : Comment!
 }
