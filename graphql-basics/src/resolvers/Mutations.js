@@ -66,7 +66,6 @@ const Mutation = {
         if (emailTaken) {
           throw new Error('Email in use ; Sorry :/')
         }
-
         user.Vorname = args.data.vorname 
       }
 
@@ -119,6 +118,28 @@ const Mutation = {
       }
     },
 
+    updatePost(parent, args, cxt) {
+      const post = cxt.db.examplePosts.find((post) => post.ID === args.id)
+
+      if (!post) {
+        throw new Error('Sorry. No Post Found :|')
+      }
+
+      if (typeof args.data.title === 'string') {
+        post.title = args.data.title
+      }
+
+      if (typeof args.data.body === 'string') {
+        post.body = args.data.body
+      }
+
+      if (typeof args.data.published !== 'undefined' ) {
+        post.published = args.data.published
+      }
+
+      return(post)
+    },
+
     createComment(parent, args, cxt) {
 
       const PostExists = cxt.db.examplePosts.some((post) => post.ID === args.post && post.published)
@@ -153,6 +174,20 @@ const Mutation = {
 
       const commentIndex = cxt.db.exampleComments.indexOf(CommentExists)
       return cxt.db.exampleComments.splice(commentIndex, 1)[0]
+    },
+
+    updateComment(parent, args, cxt) {
+      const comment = cxt.db.exampleComments.find((comment) => comment.ID === args.id)
+
+      if (!comment) {
+        throw new Error('No Comment Found!')
+      }
+
+      if (typeof args.data.text === 'string') {
+        comment.text = args.data.text
+      }
+
+      return(comment)
     }
   }
 
