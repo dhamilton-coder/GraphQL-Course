@@ -111,6 +111,11 @@ const Mutation = {
         }
 
         cxt.db.examplePosts.push(post)
+
+        if(args.published === true) {
+          cxt.pubsub.publish('post', { post })
+        }
+        
         return(post)
 
       } else {
@@ -152,6 +157,7 @@ const Mutation = {
         }
 
         cxt.db.exampleComments.push(comment)
+        cxt.pubsub.publish(`comment ${args.post}`, {comment})
 
         return comment
       }
