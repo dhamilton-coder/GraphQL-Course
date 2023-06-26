@@ -2,7 +2,7 @@ const Query = {
     me() {
       return {
         ID : '21312312',
-        Nachname : 'Bond',
+        Name : 'Bond',
         Vorname : 'Billy',
         age : 49
       }
@@ -20,7 +20,7 @@ const Query = {
     users (parent, args, cxt) {
       if (args.query) {
         return cxt.db.exampleData.filter((user) => {
-          return user.Nachname.toLowerCase().includes(args.query.toLowerCase())
+          return user.Name.toLowerCase().includes(args.query.toLowerCase())
         })
       } else {
         return cxt.db.exampleData

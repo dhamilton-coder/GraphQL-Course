@@ -47,22 +47,22 @@ let exampleComments = [{
   
   const exampleData = [{
     ID : '21312312',
-    Nachname : 'Bond',
-    Vorname : 'billybond@company.com',
+    name : 'Bond',
+    email : 'billybond@company.com',
     age : 49
   },
   
   {
     ID : '2131223111',
-  Nachname : 'Daniels',
-  Vorname : 'daviddaniels@company.com',
+  name : 'Daniels',
+  email : 'daviddaniels@company.com',
   age : 67
   },
   
   {
     ID : '8219038120',
-    Nachname : 'Hangerson',
-    Vorname : 'henryhangerson@company.com',
+    name: 'Hangerson',
+    email : 'henryhangerson@company.com',
     age : 109
   }]
 

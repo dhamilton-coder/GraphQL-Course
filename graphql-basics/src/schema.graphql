@@ -10,8 +10,8 @@ type Query {
 
 type User {
   ID : ID!
-  Nachname : String!
-  Vorname : String!
+  name : String!
+  email : String!
   age: String!
   posts : [Post!]!
   comments : [Comment!]!
@@ -35,6 +35,16 @@ type Comment {
   post : Post!
 }
 
+type CommentSubscriptionPayload {
+  mutation: String!
+  data: Comment!
+}
+
+type PostSubscriptionPayload {
+  mutation: String!
+  data : Post!
+}
+
    input CommentInput {
     text: String!
     author: ID!
@@ -42,8 +52,8 @@ type Comment {
      } 
 
 input UpdateUserInput {
-  vorname: String
-  nachname: String
+  email: String
+  name: String
   age: Int
 }
 
@@ -59,7 +69,7 @@ input UpdateCommentInput {
 
 
 type Mutation {
-  createUser(Nachname : String!, Vorname : String!, age : Int ): User!
+  createUser(name : String!, email : String!, age : Int ): User!
   deleteUser(id: ID!) : User!
   updateUser(id: ID data: UpdateUserInput!) : User!
   createPost(title : String!, body: String!, published: Boolean!, author: ID!) : Post!
@@ -71,6 +81,6 @@ type Mutation {
 }
 
 type Subscription {
-  comment(postID: ID!): Comment!
-  post: Post!
+  comment(postID: ID!): CommentSubscriptionPayload!
+  post: PostSubscriptionPayload!
 }

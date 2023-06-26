@@ -7,10 +7,10 @@ import { v4 as uuidv4 } from 'uuid';
 const Mutation = {
     createUser(parent, args, cxt) {
 
-      const VornameTaken = cxt.db.exampleData.some((user) => {
-        return user.Vorname === args.Vorname
+      const EmailTaken = cxt.db.exampleData.some((user) => {
+        return user.email === args.email
       })
-        if (VornameTaken) {
+        if (EmailTaken) {
           return new Error('Sorry! Email Taken. Oh well :)')
   
         }
@@ -60,17 +60,17 @@ const Mutation = {
         throw new Error('No User Found')
       }
 
-      if (typeof args.data.vorname === 'string') {
-        const emailTaken = cxt.db.exampleData.some((user) => user.Vorname === args.data.vorname)
+      if (typeof args.data.email === 'string') {
+        const emailTaken = cxt.db.exampleData.some((user) => user.email === args.data.email)
 
         if (emailTaken) {
           throw new Error('Email in use ; Sorry :/')
         }
-        user.Vorname = args.data.vorname 
+        user.email = args.data.email
       }
 
-      if (typeof args.data.nachname === 'string') {
-        user.Nachname = args.data.nachname
+      if (typeof args.data.name === 'string') {
+        user.name = args.data.name
       }
 
       if (typeof args.data.age !== 'undefined') {
@@ -93,6 +93,16 @@ const Mutation = {
       cxt.db.exampleComments = cxt.db.exampleComments.filter((comment) => {
         return comment.post !== args.id
       })
+
+      if (PostExists.published === true) {
+        cxt.pubsub.publish('post', {
+          post: {
+            mutation: 'DELETED',
+            data: PostExists
+          }
+        })
+      }
+
       return cxt.db.examplePosts.splice(PostIndex, 1)[0]
       
     },
@@ -113,7 +123,12 @@ const Mutation = {
         cxt.db.examplePosts.push(post)
 
         if(args.published === true) {
-          cxt.pubsub.publish('post', { post })
+          cxt.pubsub.publish('post', {
+            post: {
+              mutation: 'CREATED',
+              data: post
+            }
+          })
         }
         
         return(post)
@@ -125,6 +140,7 @@ const Mutation = {
 
     updatePost(parent, args, cxt) {
       const post = cxt.db.examplePosts.find((post) => post.ID === args.id)
+      const originalPost = {...post}
 
       if (!post) {
         throw new Error('Sorry. No Post Found :|')
@@ -140,6 +156,29 @@ const Mutation = {
 
       if (typeof args.data.published !== 'undefined' ) {
         post.published = args.data.published
+
+        if (!originalPost.published && post.published) {
+          cxt.pubsub.publish('post', {
+            post: {
+              mutation : 'CREATED',
+              data: post
+            }
+          })
+        } else if (originalPost.published && !post.published) {
+          cxt.pubsub.publish('post', {
+            post: {
+              mutation : 'DELETED',
+              data: originalPost
+            }
+          })
+        } else if(post.published) {
+          cxt.pubsub.publish('post', {
+            post: {
+              mutation : 'UPDATED',
+              data: post
+            }
+          })
+        }
       }
 
       return(post)
@@ -157,7 +196,12 @@ const Mutation = {
         }
 
         cxt.db.exampleComments.push(comment)
-        cxt.pubsub.publish(`comment ${args.post}`, {comment})
+        cxt.pubsub.publish(`comment ${args.post}`, {
+          comment: {
+            mutation: 'CREATED',
+            data: comment
+          }
+        })
 
         return comment
       }
@@ -178,6 +222,15 @@ const Mutation = {
         throw new Error('Unauthorised. Please ask for permission before deleting this post!')
       }
 
+      cxt.pubsub.publish(`comment ${CommentExists.post}`, {
+        comment: {
+          mutation: 'DELETED',
+          data: CommentExists
+        }
+      })
+        
+      
+
       const commentIndex = cxt.db.exampleComments.indexOf(CommentExists)
       return cxt.db.exampleComments.splice(commentIndex, 1)[0]
     },
@@ -191,6 +244,12 @@ const Mutation = {
 
       if (typeof args.data.text === 'string') {
         comment.text = args.data.text
+        cxt.pubsub.publish(`comment ${comment.post}`, {
+          comment: {
+            mutation: 'UPDATED',
+            data: comment
+          }
+        }) 
       }
 
       return(comment)
